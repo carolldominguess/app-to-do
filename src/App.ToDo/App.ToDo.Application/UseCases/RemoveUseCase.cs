@@ -1,6 +1,8 @@
 using App.ToDo.Application.Handlers.Remove;
 using App.ToDo.Application.Interfaces.UseCases;
 using App.ToDo.Application.Requests;
+using App.ToDo.Domain.Entities;
+using App.ToDo.Domain.Enums;
 using App.ToDo.Domain.Interfaces;
 using App.ToDo.Domain.Interfaces.Repositories;
 
@@ -10,20 +12,35 @@ public class RemoveUseCase : IRemoveUseCase
 {
     private readonly IToDoTaskRepository _repository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogRepository _logRepository;
 
-    public RemoveUseCase(IToDoTaskRepository repository, IUnitOfWork unitOfWork)
+    public RemoveUseCase(IToDoTaskRepository repository, IUnitOfWork unitOfWork, ILogRepository logRepository)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
+        _logRepository = logRepository;
     }
 
     public void ProcessRequest(RemoveUcRequest request)
     {
-        var validationHandler = new RemoveValidationHandler(_repository);
-        var persistenceHandler = new RemovePersistenceHandler(_repository, _unitOfWork);
+        try
+        {
+            var validationHandler = new RemoveValidationHandler(_repository);
+            var persistenceHandler = new RemovePersistenceHandler(_repository, _unitOfWork);
+            validationHandler.SetNext(persistenceHandler);
+            validationHandler.ProcessRequest(request);
 
-        validationHandler.SetNext(persistenceHandler);
+            var status = request.IsValid ? LogStatus.Success : LogStatus.Error;
+            var message = request.IsValid
+                ? "Tarefa removida com sucesso."
+                : string.Join("; ", request.Errors);
 
-        validationHandler.ProcessRequest(request);
+            _logRepository.Save(new Log(nameof(RemoveUseCase), status, message));
+        }
+        catch (Exception ex)
+        {
+            _logRepository.Save(new Log(nameof(RemoveUseCase), LogStatus.Error, ex.Message + " - " + ex.StackTrace));
+            throw;
+        }
     }
 }

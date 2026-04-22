@@ -49,7 +49,11 @@ public abstract class Repository<TDomain, TEntity> : IRepository<TDomain>
     public TDomain? GetById(Guid id)
     {
         var entity = _dbSet.Find(id);
-        return entity is null ? null : _mapper.Map<TDomain>(entity);
+        if (entity is null) return null;
+        
+        _context.Entry(entity).State = Microsoft.EntityFrameworkCore.EntityState.Detached;
+
+        return _mapper.Map<TDomain>(entity);
     }
 
     public IEnumerable<TDomain> Find(Expression<Func<TDomain, bool>> predicate)

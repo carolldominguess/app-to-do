@@ -97,7 +97,7 @@ dotnet test App.ToDo.UnitTests
 | Parâmetro    | Tipo       | Descrição                              |
 |--------------|------------|----------------------------------------|
 | `title`      | `string`   | Filtra por título (contém)             |
-| `status`     | `int`      | 1=Pendente, 2=Em andamento, 3=Concluído|
+| `status`     | `string`   | `Pending`, `InProgress`, `Completed`   |
 | `dueDateFrom`| `datetime` | Data de vencimento inicial (inclusive) |
 | `dueDateTo`  | `datetime` | Data de vencimento final (inclusive)   |
 | `page`       | `int`      | Número da página (padrão: 1)           |

@@ -34,6 +34,7 @@ public static class InfraServicesConfig
 
         services.AddScoped<IUnitOfWork, App.ToDo.Infra.UnitOfWork.UnitOfWork>();
         services.AddScoped<IToDoTaskRepository, ToDoTaskRepository>();
+        services.AddScoped<ILogRepository, LogRepository>();
 
         return services;
     }
